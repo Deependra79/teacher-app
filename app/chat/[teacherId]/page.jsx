@@ -36,6 +36,10 @@ export default function ChatPage() {
     }
 
     const parsed = JSON.parse(storedUser);
+    if (parsed.role !== "student") {
+      router.push("/dashboard/teacher");
+      return;
+    }
     const userId = parsed?.user?.id || parsed?.id;
     setCurrentUserId(Number(userId));
 

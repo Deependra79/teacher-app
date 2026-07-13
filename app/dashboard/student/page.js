@@ -43,6 +43,10 @@ export default function StudentDashboard() {
       return;
     }
     const parsed = JSON.parse(storedUser);
+    if (parsed.role !== "student") {
+      router.push("/dashboard/teacher");
+      return;
+    }
     setUser(parsed);
     if (parsed?.user) {
       setProfileForm({
