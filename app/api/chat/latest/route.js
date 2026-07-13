@@ -1,17 +1,10 @@
-import { pool } from "@/lib/db";
+import { getLatestMessage } from "@/lib/db";
 
 export async function POST(req) {
   const { userId } = await req.json();
-
-  const result = await pool.query(
-    `SELECT * FROM messages 
-     WHERE receiver_id = $1 
-     ORDER BY id DESC 
-     LIMIT 1`,
-    [userId]
-  );
+  const message = await getLatestMessage(userId);
 
   return Response.json({
-    message: result.rows[0] || null,
+    message,
   });
 }

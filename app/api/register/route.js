@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
-import bcrypt from "bcrypt";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 export async function POST(req) {
   try {
@@ -15,7 +14,6 @@ export async function POST(req) {
       dob,
       address,
       pincode,
-      fatherName,
       aadhar,
       subject,
       latitude,
@@ -37,79 +35,107 @@ export async function POST(req) {
       );
     }
 
-    // 🔐 HASH PASSWORD (VERY IMPORTANT)
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const supabase = createSupabaseServerClient();
 
-    // 🔍 Check if email already exists
-    const existingStudent = await pool.query(
-      "SELECT * FROM students WHERE email = $1",
-      [email]
-    );
+    // 🔍 Check if email already registered in Supabase
+    const { data: extStudents } = await supabase
+      .from("students")
+      .select("email")
+      .eq("email", email);
+    const { data: extTeachers } = await supabase
+      .from("teachers")
+      .select("email")
+      .eq("email", email);
 
-    const existingTeacher = await pool.query(
-      "SELECT * FROM teachers WHERE email = $1",
-      [email]
-    );
-
-    if (existingStudent.rows.length > 0 || existingTeacher.rows.length > 0) {
+    if (
+      (extStudents && extStudents.length > 0) ||
+      (extTeachers && extTeachers.length > 0)
+    ) {
       return NextResponse.json(
         { error: "Email already registered" },
         { status: 400 }
       );
     }
 
-    // 👨‍🏫 Teacher Registration
-    if (role === "teacher") {
-      await pool.query(
-        `
-        INSERT INTO teachers
-        (name, email, password, qualification, dob, address, pincode, aadhar, subject, latitude, longitude)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-        `,
-        [
-          name,
-          email,
-          hashedPassword, // ✅ FIXED
-          qualification,
-          dob,
-          address,
-          pincode,
-          aadhar,
-          subject,
-          latitude,
-          longitude,
-        ]
+    const { data: authData, error: authError } =
+      await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+      });
+
+    if (authError || !authData?.user) {
+      console.error("Supabase auth create user failed:", authError);
+      return NextResponse.json(
+        { error: authError?.message || "Unable to create auth account" },
+        { status: 400 }
       );
-    } 
-    
-    // 🎓 Student Registration
-    else {
-      await pool.query(
-        `
-        INSERT INTO students
-        (name, email, password, qualification, dob, address, pincode, father_name, aadhar, latitude, longitude)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-        `,
-        [
-          name,
-          email,
-          hashedPassword, // ✅ FIXED
-          qualification,
-          dob,
-          address,
-          pincode,
-          fatherName,
-          aadhar,
-          latitude,
-          longitude,
-        ]
+    }
+
+    const targetTable = role === "teacher" ? "teachers" : "students";
+
+    function calculateAge(dobString) {
+      if (!dobString) return null;
+      const dobDate = new Date(dobString);
+      if (Number.isNaN(dobDate.getTime())) return null;
+      const today = new Date();
+      let age = today.getFullYear() - dobDate.getFullYear();
+      if (
+        today.getMonth() < dobDate.getMonth() ||
+        (today.getMonth() === dobDate.getMonth() && today.getDate() < dobDate.getDate())
+      ) {
+        age -= 1;
+      }
+      return age;
+    }
+
+    const supabaseProfilePayload =
+      role === "teacher"
+        ? {
+            name,
+            email,
+            dob,
+            aadhar: aadhar ? Number(aadhar) : null,
+            qualification,
+            pincode: pincode ? Number(pincode) : null,
+            address,
+            subject,
+            latitude,
+            longitude,
+          }
+        : {
+            name,
+            email,
+            age: calculateAge(dob),
+            dob,
+            address,
+            pincode,
+            latitude,
+            longitude,
+          };
+
+    const { data: supabaseProfile, error: supabaseProfileError } = await supabase
+      .from(targetTable)
+      .insert(supabaseProfilePayload)
+      .select()
+      .single();
+
+    if (supabaseProfileError) {
+      console.error(
+        "Supabase profile insert failed:",
+        supabaseProfileError.message || supabaseProfileError
+      );
+      return NextResponse.json(
+        { error: "Registration failed during profile creation." },
+        { status: 500 }
       );
     }
 
     return NextResponse.json({
       message: "Registered successfully",
+      role,
+      user: supabaseProfile,
     });
-
   } catch (error) {
     console.error("REGISTER ERROR:", error);
 

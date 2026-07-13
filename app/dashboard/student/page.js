@@ -6,6 +6,7 @@ export default function StudentDashboard() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [search, setSearch] = useState("");
+  const [radius, setRadius] = useState(10);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -81,6 +82,7 @@ export default function StudentDashboard() {
           subject: search,
           latitude: user.user.latitude,
           longitude: user.user.longitude,
+          radiusKm: radius,
         }),
       });
 
@@ -146,14 +148,25 @@ export default function StudentDashboard() {
         </h2>
 
         {/* 🔍 Search */}
-        <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+        <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2 mb-6">
           <input
             type="text"
-            placeholder="Search teachers, subjects..."
+            placeholder="Search by skill (example: Maths, English)"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+
+          <select
+            value={radius}
+            onChange={(e) => setRadius(e.target.value)}
+            className="p-3 border rounded-lg bg-white"
+          >
+            <option value={5}>Within 5 km</option>
+            <option value={10}>Within 10 km</option>
+            <option value={20}>Within 20 km</option>
+            <option value={50}>Within 50 km</option>
+          </select>
 
           <button
             type="submit"
@@ -173,20 +186,20 @@ export default function StudentDashboard() {
 
           {/* Show message only AFTER search */}
           {!loading && hasSearched && teachers.length === 0 && (
-            <p className="text-gray-500">No teachers found</p>
+            <p className="text-gray-500">No teachers found within {radius} km for that skill.</p>
           )}
 
           {teachers.map((teacher) => (
             <div
               key={teacher.id}
-              className="p-4 bg-white rounded shadow flex justify-between items-center"
+              className="p-4 bg-white rounded shadow flex flex-col md:flex-row md:justify-between md:items-center gap-3"
             >
               <div>
                 <p className="font-bold">{teacher.name}</p>
-                <p>{teacher.subject}</p>
-                <p className="text-sm text-gray-500">
-                  📍 {teacher.distance?.toFixed(2)} km away
-                </p>
+                <p className="text-sm text-gray-600">Skill: {teacher.subject}</p>
+                <p className="text-sm text-gray-600">Qualification: {teacher.qualification}</p>
+                <p className="text-sm text-gray-500">📍 {teacher.distance?.toFixed(2)} km away</p>
+                {teacher.address && <p className="text-sm text-gray-500">{teacher.address}</p>}
               </div>
 
               <button

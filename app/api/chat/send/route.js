@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
+import { sendMessage } from "@/lib/db";
 
 export async function POST(req) {
   try {
@@ -14,20 +14,14 @@ export async function POST(req) {
       );
     }
 
-    const result = await pool.query(
-      `INSERT INTO messages (sender_id, receiver_id, message)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [sender_id, receiver_id, message]
-    );
+    const data = await sendMessage(sender_id, receiver_id, message);
 
-    console.log("✅ Saved:", result.rows[0]);
+    console.log("✅ Saved:", data);
 
     return NextResponse.json({
       success: true,
-      data: result.rows[0],
+      data,
     });
-
   } catch (error) {
     console.error("❌ SEND ERROR:", error);
 

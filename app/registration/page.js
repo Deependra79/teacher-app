@@ -127,6 +127,10 @@ export default function Register() {
           <textarea name="address" placeholder="Address"
             className="w-full p-2 border rounded" onChange={handleChange} required />
 
+          <p className="text-sm text-gray-500 -mt-2">
+            Your current device location will be used to match you with nearby teachers or students.
+          </p>
+
           <input type="number" name="pincode" placeholder="Pincode"
             className="w-full p-2 border rounded" onChange={handleChange} required />
 

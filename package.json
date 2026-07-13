@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:legacy-users": "node scripts/migrate-legacy-users.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
     "bcrypt": "^6.0.0",
     "next": "16.2.1",
     "pg": "^8.20.0",
