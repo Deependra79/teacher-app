@@ -75,28 +75,29 @@ export default function TeacherDashboard() {
   };
 
   // Load chat list
-  useEffect(() => {
+  const fetchChats = async () => {
     if (!user) return;
+    try {
+      const res = await fetch("/api/chat/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.user.id,
+        }),
+      });
+      const data = await res.json();
+      setChats(data.chats || []);
+    } catch (err) {
+      console.error("Chat list fetch error:", err);
+    }
+  };
 
-    const fetchChats = async () => {
-      try {
-        const res = await fetch("/api/chat/list", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: user.user.id,
-          }),
-        });
-        const data = await res.json();
-        setChats(data.chats || []);
-      } catch (err) {
-        console.error("Chat list fetch error:", err);
-      }
-    };
-
-    fetchChats();
+  useEffect(() => {
+    if (user) {
+      fetchChats();
+    }
   }, [user]);
 
   // Fetch messages
@@ -176,6 +177,53 @@ export default function TeacherDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     router.push("/login");
+  };
+
+  const handleBlockToggle = async (chat) => {
+    const isBlockedByMe = chat.blocked && Number(chat.blockerId) === Number(user.user.id);
+    const actionMessage = isBlockedByMe
+      ? "__SYSTEM__ACTION__UNBLOCK__"
+      : "__SYSTEM__ACTION__BLOCK__";
+
+    try {
+      await fetch("/api/chat/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender_id: user.user.id,
+          receiver_id: chat.chat_user_id,
+          message: actionMessage,
+        }),
+      });
+      alert(isBlockedByMe ? "Student unblocked successfully!" : "Student blocked successfully!");
+      fetchChats();
+    } catch (err) {
+      console.error("Block toggle error:", err);
+    }
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    if (!confirm("Are you sure you want to remove this student from your conversations list?")) return;
+    try {
+      await fetch("/api/chat/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender_id: user.user.id,
+          receiver_id: chatId,
+          message: "__SYSTEM__ACTION__DELETE__",
+        }),
+      });
+      alert("Conversation removed.");
+      setSelectedStudent(null);
+      fetchChats();
+    } catch (err) {
+      console.error("Delete chat error:", err);
+    }
   };
 
   const handleSaveProfile = async (e) => {
@@ -358,26 +406,64 @@ export default function TeacherDashboard() {
 
             {chats.map((chat, index) => {
               const isActive = selectedStudent === chat.chat_user_id;
+              const isBlockedByMe = chat.blocked && Number(chat.blockerId) === Number(user.user.id);
+              const isBlockedByThem = chat.blocked && Number(chat.blockerId) !== Number(user.user.id);
+
               return (
                 <div
                   key={index}
-                  className={`p-3.5 rounded-2xl cursor-pointer flex items-center gap-3 transition-all ${
+                  className={`p-3.5 rounded-2xl cursor-pointer flex flex-col gap-2 transition-all border ${
                     isActive
-                      ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200/50 dark:border-green-900/50"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-800/40 border border-transparent"
+                      ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200/50 dark:border-green-900/50"
+                      : "hover:bg-slate-50 dark:hover:bg-slate-800/40 border-transparent bg-white dark:bg-slate-900"
                   }`}
                   onClick={() => setSelectedStudent(chat.chat_user_id)}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
-                    S
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                      {chat.name ? chat.name[0].toUpperCase() : "S"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm leading-none text-slate-800 dark:text-slate-200 truncate">
+                        {chat.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 uppercase font-bold tracking-wider">
+                        Student Account
+                      </p>
+                      {chat.blocked && (
+                        <span className="inline-block mt-1 px-1.5 py-0.5 text-[8px] font-bold rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                          {isBlockedByMe ? "🚫 Blocked by you" : "🚫 Blocked"}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm leading-none text-slate-800 dark:text-slate-200">
-                      {chat.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 uppercase font-bold tracking-wider">
-                      Student Account
-                    </p>
+
+                  <div className="flex gap-2 justify-end border-t border-slate-100 dark:border-slate-800/60 pt-2 mt-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBlockToggle(chat);
+                      }}
+                      disabled={isBlockedByThem}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                        isBlockedByThem
+                          ? "border-slate-150 text-slate-300 dark:border-slate-850 dark:text-slate-700 cursor-not-allowed"
+                          : isBlockedByMe
+                          ? "border-green-500/30 bg-green-500/5 text-green-600 hover:bg-green-500/10"
+                          : "border-red-500/30 bg-red-500/5 text-red-600 hover:bg-red-500/10"
+                      }`}
+                    >
+                      {isBlockedByMe ? "Unblock" : "Block"}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteChat(chat.chat_user_id);
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
               );
@@ -434,40 +520,61 @@ export default function TeacherDashboard() {
 
               {/* Chat Bubble History */}
               <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                {messages.map((msg) => {
-                  const isMe = msg.sender_id === user.user.id;
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`p-3.5 rounded-2xl max-w-md shadow-sm border ${
-                          isMe
-                            ? "bg-gradient-to-tr from-green-600 to-emerald-600 text-white border-green-700/20"
-                            : "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200/50 dark:border-slate-800"
-                        }`}
+                {/* 🚫 Block Banner Alert inside conversation */}
+                {chats.find(c => c.chat_user_id === selectedStudent)?.blocked && (
+                  <div className="p-3.5 rounded-2xl border text-xs font-semibold text-center flex items-center justify-center gap-2 bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400 mb-2">
+                    <span>
+                      {chats.find(c => c.chat_user_id === selectedStudent)?.blockerId === user.user.id
+                        ? "🚫 You have blocked this student. You must unblock them to write messages."
+                        : "🚫 You have been blocked by this student."}
+                    </span>
+                    {chats.find(c => c.chat_user_id === selectedStudent)?.blockerId === user.user.id && (
+                      <button
+                        onClick={() => handleBlockToggle(chats.find(c => c.chat_user_id === selectedStudent))}
+                        className="underline text-red-700 dark:text-red-300 font-bold hover:text-red-900 dark:hover:text-red-100 ml-1"
                       >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {msg.message}
-                        </p>
-                        <span
-                          className={`text-[9px] block text-right mt-1.5 font-medium opacity-70 ${
-                            isMe ? "text-green-100" : "text-slate-400"
+                        Unblock Now
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {messages
+                  .filter((m) => !m.message.startsWith("__SYSTEM__ACTION__"))
+                  .map((msg) => {
+                    const isMe = msg.sender_id === user.user.id;
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`p-3.5 rounded-2xl max-w-md shadow-sm border ${
+                            isMe
+                              ? "bg-gradient-to-tr from-green-600 to-emerald-600 text-white border-green-700/20"
+                              : "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200/50 dark:border-slate-800"
                           }`}
-                          suppressHydrationWarning
                         >
-                          {typeof window !== "undefined"
-                            ? new Date(msg.created_at).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : ""}
-                        </span>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {msg.message}
+                          </p>
+                          <span
+                            className={`text-[9px] block text-right mt-1.5 font-medium opacity-70 ${
+                              isMe ? "text-green-100" : "text-slate-400"
+                            }`}
+                            suppressHydrationWarning
+                          >
+                            {typeof window !== "undefined"
+                              ? new Date(msg.created_at).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : ""}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 <div ref={chatEndRef}></div>
               </div>
 
@@ -482,16 +589,28 @@ export default function TeacherDashboard() {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                    disabled={chats.find(c => c.chat_user_id === selectedStudent)?.blocked}
                     className={`flex-1 border px-4 py-3.5 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-green-500/40 transition-all ${
-                      darkMode
+                      chats.find(c => c.chat_user_id === selectedStudent)?.blocked
+                        ? "bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-700 cursor-not-allowed border-slate-200 dark:border-slate-900"
+                        : darkMode
                         ? "bg-slate-950 border-slate-800 text-slate-100 placeholder-slate-600"
                         : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
                     }`}
-                    placeholder="Write a message to your student..."
+                    placeholder={
+                      chats.find(c => c.chat_user_id === selectedStudent)?.blocked
+                        ? "Conversation is locked due to block..."
+                        : "Write a message to your student..."
+                    }
                   />
                   <button
                     onClick={sendMessage}
-                    className="bg-green-600 hover:bg-green-700 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-md shadow-green-500/20 transition-all active:scale-95"
+                    disabled={chats.find(c => c.chat_user_id === selectedStudent)?.blocked}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-md transition-all active:scale-95 ${
+                      chats.find(c => c.chat_user_id === selectedStudent)?.blocked
+                        ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
+                        : "bg-green-600 hover:bg-green-700 text-white shadow-green-500/20"
+                    }`}
                   >
                     ➤
                   </button>

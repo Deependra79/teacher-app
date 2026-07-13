@@ -10,6 +10,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockerId, setBlockerId] = useState(null);
 
   const router = useRouter();
   const bottomRef = useRef(null);
@@ -96,6 +98,8 @@ export default function ChatPage() {
 
       const data = await res.json();
       setMessages(data.messages || []);
+      setIsBlocked(!!data.blocked);
+      setBlockerId(data.blockerId || null);
     } catch (err) {
       console.error("Load messages error:", err);
     }
@@ -200,44 +204,57 @@ export default function ChatPage() {
         </button>
       </header>
 
+      {/* 🚫 Block Banner Alert */}
+      {isBlocked && (
+        <div className="mx-6 mt-4 p-3.5 rounded-2xl border text-xs font-semibold text-center flex items-center justify-center gap-2 bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+          <span>
+            {blockerId === currentUserId
+              ? "🚫 You have blocked this user. Unblock them from dashboard to write messages."
+              : "🚫 You have been blocked by this user."}
+          </span>
+        </div>
+      )}
+
       {/* Messages Scroll Panel */}
       <div className="flex-1 p-6 overflow-y-auto space-y-4">
-        {messages.map((msg) => {
-          const isMe = Number(msg.sender_id) === Number(currentUserId);
+        {messages
+          .filter((m) => !m.message.startsWith("__SYSTEM__ACTION__"))
+          .map((msg) => {
+            const isMe = Number(msg.sender_id) === Number(currentUserId);
 
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-            >
+            return (
               <div
-                className={`p-3.5 rounded-2xl max-w-md shadow-sm border ${
-                  isMe
-                    ? "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white border-blue-700/20"
-                    : "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200/50 dark:border-slate-800"
-                }`}
+                key={msg.id}
+                className={`flex ${isMe ? "justify-end" : "justify-start"}`}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {msg.message}
-                </p>
-
-                <span
-                  className={`text-[9px] block text-right mt-1.5 font-medium opacity-70 ${
-                    isMe ? "text-blue-100" : "text-slate-400"
+                <div
+                  className={`p-3.5 rounded-2xl max-w-md shadow-sm border ${
+                    isMe
+                      ? "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white border-blue-700/20"
+                      : "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200/50 dark:border-slate-800"
                   }`}
-                  suppressHydrationWarning
                 >
-                  {typeof window !== "undefined"
-                    ? new Date(msg.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : ""}
-                </span>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {msg.message}
+                  </p>
+
+                  <span
+                    className={`text-[9px] block text-right mt-1.5 font-medium opacity-70 ${
+                      isMe ? "text-blue-100" : "text-slate-400"
+                    }`}
+                    suppressHydrationWarning
+                  >
+                    {typeof window !== "undefined"
+                      ? new Date(msg.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
+                  </span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
         {/* Auto scroll target */}
         <div ref={bottomRef}></div>
@@ -254,16 +271,24 @@ export default function ChatPage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            disabled={isBlocked}
             className={`flex-1 border px-4 py-3.5 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500/40 transition-all ${
-              darkMode
+              isBlocked
+                ? "bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-700 cursor-not-allowed border-slate-200 dark:border-slate-900"
+                : darkMode
                 ? "bg-slate-950 border-slate-800 text-slate-100 placeholder-slate-600"
                 : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
             }`}
-            placeholder="Type your message here..."
+            placeholder={isBlocked ? "Conversation is locked due to block..." : "Type your message here..."}
           />
           <button
             onClick={sendMessage}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-md shadow-blue-500/20 transition-all active:scale-95 flex-shrink-0"
+            disabled={isBlocked}
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-md transition-all active:scale-95 flex-shrink-0 ${
+              isBlocked
+                ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
+                : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
+            }`}
           >
             ➤
           </button>

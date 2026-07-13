@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sendMessage } from "@/lib/db";
+import { sendMessage, isBlocked } from "@/lib/db";
 
 export async function POST(req) {
   try {
@@ -12,6 +12,18 @@ export async function POST(req) {
         { error: "Missing fields" },
         { status: 400 }
       );
+    }
+
+    // Block check for normal messages
+    const isSystemAction = message.startsWith("__SYSTEM__ACTION__");
+    if (!isSystemAction) {
+      const blockStatus = await isBlocked(sender_id, receiver_id);
+      if (blockStatus.blocked) {
+        return NextResponse.json(
+          { error: "You cannot send messages to this user because of a block" },
+          { status: 403 }
+        );
+      }
     }
 
     const data = await sendMessage(sender_id, receiver_id, message);

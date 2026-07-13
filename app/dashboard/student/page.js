@@ -19,6 +19,8 @@ export default function StudentDashboard() {
     address: "",
     pincode: "",
   });
+  const [myChats, setMyChats] = useState([]);
+  const [activeTab, setActiveTab] = useState("search");
 
   const router = useRouter();
 
@@ -51,6 +53,36 @@ export default function StudentDashboard() {
       });
     }
   }, []);
+
+  // Fetch student conversations list on activeTab changing to chats
+  const fetchMyChats = async () => {
+    if (!storedUserHelper()) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem("user"));
+      const res = await fetch("/api/chat/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: stored.user.id }),
+      });
+      const data = await res.json();
+      setMyChats(data.chats || []);
+    } catch (err) {
+      console.error("Fetch my chats error:", err);
+    }
+  };
+
+  const storedUserHelper = () => {
+    if (typeof window === "undefined") return false;
+    return !!localStorage.getItem("user");
+  };
+
+  useEffect(() => {
+    if (activeTab === "chats" && user) {
+      fetchMyChats();
+    }
+  }, [activeTab, user]);
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -128,6 +160,52 @@ export default function StudentDashboard() {
     } catch (err) {
       console.error("Save profile error:", err);
       alert("An error occurred while saving details.");
+    }
+  };
+
+  const handleBlockToggle = async (chat) => {
+    const isBlockedByMe = chat.blocked && Number(chat.blockerId) === Number(user.user.id);
+    const actionMessage = isBlockedByMe
+      ? "__SYSTEM__ACTION__UNBLOCK__"
+      : "__SYSTEM__ACTION__BLOCK__";
+
+    try {
+      await fetch("/api/chat/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender_id: user.user.id,
+          receiver_id: chat.chat_user_id,
+          message: actionMessage,
+        }),
+      });
+      alert(isBlockedByMe ? "Teacher unblocked successfully!" : "Teacher blocked successfully!");
+      fetchMyChats();
+    } catch (err) {
+      console.error("Block toggle error:", err);
+    }
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    if (!confirm("Are you sure you want to remove this teacher from your conversations list?")) return;
+    try {
+      await fetch("/api/chat/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender_id: user.user.id,
+          receiver_id: chatId,
+          message: "__SYSTEM__ACTION__DELETE__",
+        }),
+      });
+      alert("Conversation removed.");
+      fetchMyChats();
+    } catch (err) {
+      console.error("Delete chat error:", err);
     }
   };
 
@@ -305,90 +383,191 @@ export default function StudentDashboard() {
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-6 mt-10 relative z-10">
         {/* Welcome message */}
-        <div className="mb-8">
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-            Welcome back, {user?.user?.name}! 👋
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            Let's search for qualified mentors near your coordinates.
-          </p>
-        </div>
-
-        {/* 🔍 Search portal card */}
-        <div
-          className={`p-6 rounded-3xl border shadow-lg ${
-            darkMode
-              ? "bg-slate-900/60 border-slate-800"
-              : "bg-white border-slate-200/60"
-          } backdrop-blur-sm mb-8`}
-        >
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-col md:flex-row gap-4 items-stretch"
-          >
-            <div className="flex-1 relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                🔍
-              </span>
-              <input
-                type="text"
-                placeholder="What skill do you want to learn? (Maths, English, Music...)"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className={`w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm border outline-none focus:ring-2 focus:ring-blue-500/40 transition-all ${
-                  darkMode
-                    ? "bg-slate-950 border-slate-800 text-slate-100 placeholder-slate-600"
-                    : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
-                }`}
-                required
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <select
-                value={radius}
-                onChange={(e) => setRadius(e.target.value)}
-                className={`px-4 py-3.5 rounded-2xl text-sm border outline-none cursor-pointer focus:ring-2 focus:ring-blue-500/40 transition-all ${
-                  darkMode
-                    ? "bg-slate-950 border-slate-800 text-slate-100"
-                    : "bg-slate-50 border-slate-200 text-slate-900"
-                }`}
-              >
-                <option value={5}>Within 5 km</option>
-                <option value={10}>Within 10 km</option>
-                <option value={20}>Within 20 km</option>
-                <option value={50}>Within 50 km</option>
-              </select>
-
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-2xl text-sm font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-600/30 transition-all active:scale-98"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Loading Skeleton */}
-        {loading && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className={`h-48 rounded-2xl border ${
-                  darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
-                }`}
-              ></div>
-            ))}
-          </div>
-        )}
-
-        {/* Search Results */}
-        {!loading && (
+        <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            {/* Empty state */}
-            {hasSearched && teachers.length === 0 && (
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+              Welcome back, {user?.user?.name}! 👋
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+              Let's search for qualified mentors near your coordinates.
+            </p>
+          </div>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="flex gap-6 mb-8 border-b border-slate-200 dark:border-slate-800 pb-2">
+          <button
+            onClick={() => setActiveTab("search")}
+            className={`pb-2 text-sm font-bold border-b-2 transition-all outline-none ${
+              activeTab === "search"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            }`}
+          >
+            🔍 Search Mentors
+          </button>
+          <button
+            onClick={() => setActiveTab("chats")}
+            className={`pb-2 text-sm font-bold border-b-2 transition-all outline-none ${
+              activeTab === "chats"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            }`}
+          >
+            💬 My Conversations
+          </button>
+        </div>
+
+        {activeTab === "search" ? (
+          <>
+            {/* 🔍 Search portal card */}
+            <div
+              className={`p-6 rounded-3xl border shadow-lg ${
+                darkMode
+                  ? "bg-slate-900/60 border-slate-800"
+                  : "bg-white border-slate-200/60"
+              } backdrop-blur-sm mb-8`}
+            >
+              <form
+                onSubmit={handleSearch}
+                className="flex flex-col md:flex-row gap-4 items-stretch"
+              >
+                <div className="flex-1 relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                    🔍
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="What skill do you want to learn? (Maths, English, Music...)"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={`w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm border outline-none focus:ring-2 focus:ring-blue-500/40 transition-all ${
+                      darkMode
+                        ? "bg-slate-950 border-slate-800 text-slate-100 placeholder-slate-600"
+                        : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
+                    }`}
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <select
+                    value={radius}
+                    onChange={(e) => setRadius(e.target.value)}
+                    className={`px-4 py-3.5 rounded-2xl text-sm border outline-none cursor-pointer focus:ring-2 focus:ring-blue-500/40 transition-all ${
+                      darkMode
+                        ? "bg-slate-950 border-slate-800 text-slate-100"
+                        : "bg-slate-50 border-slate-200 text-slate-900"
+                    }`}
+                  >
+                    <option value={5}>Within 5 km</option>
+                    <option value={10}>Within 10 km</option>
+                    <option value={20}>Within 20 km</option>
+                    <option value={50}>Within 50 km</option>
+                  </select>
+
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-2xl text-sm font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-600/30 transition-all active:scale-98"
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Loading Skeleton */}
+            {loading && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-48 rounded-2xl border ${
+                      darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                    }`}
+                  ></div>
+                ))}
+              </div>
+            )}
+
+            {/* Search Results */}
+            {!loading && (
+              <div>
+                {/* Empty state */}
+                {hasSearched && teachers.length === 0 && (
+                  <div
+                    className={`p-12 text-center rounded-3xl border ${
+                      darkMode
+                        ? "bg-slate-900/40 border-slate-800"
+                        : "bg-white border-slate-200"
+                    }`}
+                  >
+                    <span className="text-4xl">🧑‍🏫</span>
+                    <h3 className="text-lg font-bold mt-4">No Teachers Found</h3>
+                    <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
+                      We couldn't find any teachers teaching "{search}" within{" "}
+                      {radius} km. Try selecting a larger search radius.
+                    </p>
+                  </div>
+                )}
+
+                {/* Grid of Results */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {teachers.map((teacher) => (
+                    <div
+                      key={teacher.id}
+                      className={`p-6 rounded-2xl border shadow-sm hover:shadow-xl dark:shadow-none hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between gap-4 ${
+                        darkMode
+                          ? "bg-slate-900 border-slate-800 hover:border-slate-700"
+                          : "bg-white border-slate-200/80 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20 flex-shrink-0">
+                          {teacher.name ? teacher.name[0].toUpperCase() : "T"}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-base leading-tight truncate">
+                            {teacher.name}
+                          </h4>
+                          <p className="text-xs text-slate-400 mt-0.5 truncate">
+                            {teacher.qualification}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1.5 mt-3">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                              {teacher.subject}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
+                              📍 {teacher.distance?.toFixed(1)} km
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {teacher.address && (
+                        <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal border-t border-slate-100 dark:border-slate-800 pt-3">
+                          🏠 {teacher.address}
+                        </p>
+                      )}
+
+                      <button
+                        onClick={() => router.push(`/chat/${teacher.id}`)}
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl text-xs font-semibold hover:from-emerald-700 hover:to-teal-700 hover:shadow-md transition-all flex items-center justify-center gap-1.5"
+                      >
+                        💬 Message Teacher
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          /* 💬 MY CONVERSATIONS TAB VIEW */
+          <div>
+            {myChats.length === 0 && (
               <div
                 className={`p-12 text-center rounded-3xl border ${
                   darkMode
@@ -396,64 +575,83 @@ export default function StudentDashboard() {
                     : "bg-white border-slate-200"
                 }`}
               >
-                <span className="text-4xl">🧑‍🏫</span>
-                <h3 className="text-lg font-bold mt-4">No Teachers Found</h3>
+                <span className="text-4xl">💬</span>
+                <h3 className="text-lg font-bold mt-4">No Conversations</h3>
                 <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
-                  We couldn't find any teachers teaching "{search}" within{" "}
-                  {radius} km. Try selecting a larger search radius.
+                  You haven't initiated chat threads with any mentors yet. Use the Search tab to find local teachers!
                 </p>
               </div>
             )}
 
-            {/* Grid of Results */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teachers.map((teacher) => (
-                <div
-                  key={teacher.id}
-                  className={`p-6 rounded-2xl border shadow-sm hover:shadow-xl dark:shadow-none hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between gap-4 ${
-                    darkMode
-                      ? "bg-slate-900 border-slate-800 hover:border-slate-700"
-                      : "bg-white border-slate-200/80 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20 flex-shrink-0">
-                      {teacher.name ? teacher.name[0].toUpperCase() : "T"}
-                    </div>
+              {myChats.map((chat) => {
+                const isBlockedByMe = chat.blocked && Number(chat.blockerId) === Number(user.user.id);
+                const isBlockedByThem = chat.blocked && Number(chat.blockerId) !== Number(user.user.id);
 
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-base leading-tight truncate">
-                        {teacher.name}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-0.5 truncate">
-                        {teacher.qualification}
-                      </p>
-
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                          {teacher.subject}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
-                          📍 {teacher.distance?.toFixed(1)} km
-                        </span>
+                return (
+                  <div
+                    key={chat.chat_user_id}
+                    className={`p-6 rounded-2xl border shadow-sm flex flex-col justify-between gap-4 transition-all duration-300 ${
+                      darkMode
+                        ? "bg-slate-900 border-slate-800"
+                        : "bg-white border-slate-200/80"
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-500 text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                        {chat.name ? chat.name[0].toUpperCase() : "T"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-base leading-tight truncate">
+                          {chat.name}
+                        </h4>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Teacher Account
+                        </p>
+                        {chat.blocked && (
+                          <span className="inline-block mt-2 px-2 py-0.5 text-[9px] font-bold rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                            {isBlockedByMe ? "🚫 Blocked by you" : "🚫 Blocked"}
+                          </span>
+                        )}
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <button
+                        onClick={() => router.push(`/chat/${chat.chat_user_id}`)}
+                        disabled={isBlockedByThem}
+                        className={`py-2 rounded-xl text-xs font-semibold shadow-sm transition-all text-center ${
+                          isBlockedByThem
+                            ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/10 hover:shadow-blue-600/25"
+                        }`}
+                      >
+                        Open Chat
+                      </button>
+                      <button
+                        onClick={() => handleDeleteChat(chat.chat_user_id)}
+                        className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-xl text-xs font-semibold transition-all"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => handleBlockToggle(chat)}
+                      disabled={isBlockedByThem}
+                      className={`w-full py-2 rounded-xl text-xs font-semibold border transition-all ${
+                        isBlockedByThem
+                          ? "border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed"
+                          : isBlockedByMe
+                          ? "border-green-500/50 bg-green-500/10 text-green-600 hover:bg-green-500/20"
+                          : "border-red-500/50 bg-red-500/10 text-red-600 hover:bg-red-500/20"
+                      }`}
+                    >
+                      {isBlockedByMe ? "🔓 Unblock Teacher" : "🚫 Block Teacher"}
+                    </button>
                   </div>
-
-                  {teacher.address && (
-                    <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal border-t border-slate-100 dark:border-slate-800 pt-3">
-                      🏠 {teacher.address}
-                    </p>
-                  )}
-
-                  <button
-                    onClick={() => router.push(`/chat/${teacher.id}`)}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl text-xs font-semibold hover:from-emerald-700 hover:to-teal-700 hover:shadow-md transition-all flex items-center justify-center gap-1.5"
-                  >
-                    💬 Message Teacher
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
