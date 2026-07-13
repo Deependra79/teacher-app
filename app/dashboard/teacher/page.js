@@ -305,11 +305,11 @@ export default function TeacherDashboard() {
                     S
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm leading-none">
-                      Student #{chat.chat_user_id}
+                    <p className="font-bold text-sm leading-none text-slate-800 dark:text-slate-200">
+                      {chat.name}
                     </p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">
-                      Click to converse
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 uppercase font-bold tracking-wider">
+                      Student Account
                     </p>
                   </div>
                 </div>
@@ -351,11 +351,11 @@ export default function TeacherDashboard() {
                   </button>
 
                   <div className="w-10 h-10 rounded-xl bg-green-500 text-white flex items-center justify-center font-bold text-sm">
-                    S
+                    {chats.find(c => c.chat_user_id === selectedStudent)?.name?.[0]?.toUpperCase() || "S"}
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm leading-none flex items-center gap-1.5">
-                      Student #{selectedStudent}
+                    <h4 className="font-bold text-sm leading-none flex items-center gap-1.5 text-slate-850 dark:text-slate-100">
+                      {chats.find(c => c.chat_user_id === selectedStudent)?.name || `Student #${selectedStudent}`}
                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                     </h4>
                     <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">

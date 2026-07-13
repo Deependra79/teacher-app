@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function ChatPage() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [otherUserId, setOtherUserId] = useState(null);
+  const [otherUserName, setOtherUserName] = useState("Teacher");
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
@@ -39,6 +40,31 @@ export default function ChatPage() {
     const otherId = window.location.pathname.split("/").pop();
     if (otherId) setOtherUserId(Number(otherId));
   }, []);
+
+  // Fetch partner profile name
+  useEffect(() => {
+    if (!otherUserId) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: otherUserId }),
+        });
+        const data = await res.json();
+        if (data.name) {
+          setOtherUserName(data.name);
+        }
+      } catch (err) {
+        console.error("Fetch profile error:", err);
+      }
+    };
+
+    fetchProfile();
+  }, [otherUserId]);
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -152,11 +178,11 @@ export default function ChatPage() {
           </button>
           <div>
             <h1 className="text-sm font-bold tracking-tight flex items-center gap-1.5">
-              Teacher Conversation
+              {otherUserName}
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             </h1>
             <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider font-bold">
-              Recipient ID: #{otherUserId}
+              Tutoring Conversation
             </p>
           </div>
         </div>
