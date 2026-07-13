@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -10,23 +11,45 @@ export default function StudentDashboard() {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const router = useRouter();
 
-  // 🔐 Load user
+  // Load theme and user
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    // Load theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
 
+    // Load user
+    const storedUser = localStorage.getItem("user");
     if (!storedUser) {
       router.push("/login");
       return;
     }
-
     const parsed = JSON.parse(storedUser);
     setUser(parsed);
   }, []);
 
-  // 📍 Get location (RUN ONLY ONCE)
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
+
+  // Get location
   useEffect(() => {
     if (!navigator.geolocation) {
       console.error("Geolocation not supported");
@@ -35,37 +58,38 @@ export default function StudentDashboard() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log("✅ Location fetched");
-
-        setUser((prev) => ({
-          ...prev,
-          user: {
-            ...prev?.user,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          },
-        }));
+        setUser((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            user: {
+              ...prev.user,
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            },
+          };
+        });
       },
       (err) => {
-        console.error("❌ Location error:", err.message);
+        console.error("Location error:", err.message);
         alert("Please allow location access to search nearby teachers");
       }
     );
-  }, []); // ✅ FIXED (no dependency)
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     router.push("/login");
   };
 
-  // 🔍 Search
+  // Search
   const handleSearch = async (e) => {
     e.preventDefault();
 
-    if (!search) return;
+    if (!search.trim()) return;
 
     if (!user?.user?.latitude || !user?.user?.longitude) {
-      alert("Location not available. Please allow location.");
+      alert("Location not available. Please allow location access.");
       return;
     }
 
@@ -87,131 +111,292 @@ export default function StudentDashboard() {
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error("API failed:", errText);
+        console.error("Search API failed");
         setTeachers([]);
         setLoading(false);
         return;
       }
 
       const data = await res.json();
-      console.log("Response:", data);
-
       setTeachers(data.teachers || []);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Search error:", err);
       setTeachers([]);
     }
 
     setLoading(false);
   };
 
-  if (!user) return <p className="p-6">Loading...</p>;
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <p className="text-slate-500 dark:text-slate-400 animate-pulse font-medium">
+          Loading dashboard...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-
-      {/* Navbar */}
-      <div className="flex justify-between items-center p-4 bg-blue-600 text-white">
-        <h1 className="text-lg font-bold">Student Dashboard</h1>
-
-        <div className="relative">
-          <button
-            onClick={() => setShowProfile(!showProfile)}
-            className="bg-white text-black px-3 py-1 rounded-full"
-          >
-            👤
-          </button>
-
-          {showProfile && (
-            <div className="absolute right-0 mt-2 bg-white text-black p-4 rounded shadow-md w-64 z-50">
-              <p><b>Name:</b> {user?.user?.name}</p>
-              <p><b>Email:</b> {user?.user?.email}</p>
-              <p><b>Qualification:</b> {user?.user?.qualification}</p>
-              <p><b>Role:</b> {user?.role}</p>
-
-              <button
-                onClick={handleLogout}
-                className="mt-3 w-full bg-red-500 text-white p-2 rounded"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
+    <div
+      className={`min-h-screen transition-colors duration-300 ${
+        darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"
+      } font-sans pb-12`}
+    >
+      {/* Glow effects */}
+      <div className="absolute top-0 left-0 w-full h-[300px] overflow-hidden pointer-events-none z-0">
+        <div
+          className={`absolute top-[-50%] left-[10%] w-[350px] h-[350px] rounded-full blur-[80px] opacity-30 ${
+            darkMode ? "bg-blue-900" : "bg-blue-200"
+          }`}
+        ></div>
       </div>
 
-      {/* Main */}
-      <div className="p-6">
-        <h2 className="text-xl mb-6">
-          Welcome, {user?.user?.name}
-        </h2>
+      {/* Header */}
+      <header
+        className={`sticky top-0 z-40 w-full px-6 py-4 flex justify-between items-center backdrop-blur-md border-b transition-colors ${
+          darkMode
+            ? "bg-slate-950/80 border-slate-900"
+            : "bg-white/80 border-slate-200/50"
+        } shadow-sm`}
+      >
+        <div className="flex items-center gap-2">
+          <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+            S
+          </span>
+          <h1 className="text-lg font-bold tracking-tight">Student Hub</h1>
+        </div>
 
-        {/* 🔍 Search */}
-        <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2 mb-6">
-          <input
-            type="text"
-            placeholder="Search by skill (example: Maths, English)"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          <select
-            value={radius}
-            onChange={(e) => setRadius(e.target.value)}
-            className="p-3 border rounded-lg bg-white"
-          >
-            <option value={5}>Within 5 km</option>
-            <option value={10}>Within 10 km</option>
-            <option value={20}>Within 20 km</option>
-            <option value={50}>Within 50 km</option>
-          </select>
-
+        <div className="flex items-center gap-4">
+          {/* Theme switcher */}
           <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 rounded-lg hover:bg-blue-700"
+            onClick={toggleDarkMode}
+            className={`p-2 rounded-lg border text-sm transition-colors ${
+              darkMode
+                ? "border-slate-800 bg-slate-900/50 text-yellow-400 hover:bg-slate-800"
+                : "border-slate-200 bg-slate-100/50 text-slate-600 hover:bg-slate-100"
+            }`}
           >
-            Search
+            {darkMode ? "☀️" : "🌙"}
           </button>
-        </form>
 
-        {/* Loading */}
+          {/* User Profile dropdown wrapper */}
+          <div className="relative">
+            <button
+              onClick={() => setShowProfile(!showProfile)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center border font-bold text-sm shadow-sm transition-all ${
+                darkMode
+                  ? "bg-slate-900 border-slate-800 hover:bg-slate-800"
+                  : "bg-slate-100 border-slate-200 hover:bg-slate-200"
+              }`}
+            >
+              👤
+            </button>
+
+            {showProfile && (
+              <div
+                className={`absolute right-0 mt-2 p-6 rounded-2xl shadow-2xl w-72 z-50 border transition-all ${
+                  darkMode
+                    ? "bg-slate-900 border-slate-800 text-slate-100"
+                    : "bg-white border-slate-200 text-slate-900"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                    {user?.user?.name ? user.user.name[0].toUpperCase() : "S"}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm leading-tight">
+                      {user?.user?.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 capitalize">
+                      {user?.role} Account
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 text-xs text-slate-500 dark:text-slate-400">
+                  <p>
+                    <b>Email:</b> {user?.user?.email}
+                  </p>
+                  <p>
+                    <b>Qualification:</b> {user?.user?.qualification}
+                  </p>
+                  {user?.user?.address && (
+                    <p>
+                      <b>Address:</b> {user.user.address}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-red-500/10 transition-colors"
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto px-6 mt-10 relative z-10">
+        {/* Welcome message */}
+        <div className="mb-8">
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            Welcome back, {user?.user?.name}! 👋
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Let's search for qualified mentors near your coordinates.
+          </p>
+        </div>
+
+        {/* 🔍 Search portal card */}
+        <div
+          className={`p-6 rounded-3xl border shadow-lg ${
+            darkMode
+              ? "bg-slate-900/60 border-slate-800"
+              : "bg-white border-slate-200/60"
+          } backdrop-blur-sm mb-8`}
+        >
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-col md:flex-row gap-4 items-stretch"
+          >
+            <div className="flex-1 relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                🔍
+              </span>
+              <input
+                type="text"
+                placeholder="What skill do you want to learn? (Maths, English, Music...)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm border outline-none focus:ring-2 focus:ring-blue-500/40 transition-all ${
+                  darkMode
+                    ? "bg-slate-950 border-slate-800 text-slate-100 placeholder-slate-600"
+                    : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
+                }`}
+                required
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <select
+                value={radius}
+                onChange={(e) => setRadius(e.target.value)}
+                className={`px-4 py-3.5 rounded-2xl text-sm border outline-none cursor-pointer focus:ring-2 focus:ring-blue-500/40 transition-all ${
+                  darkMode
+                    ? "bg-slate-950 border-slate-800 text-slate-100"
+                    : "bg-slate-50 border-slate-200 text-slate-900"
+                }`}
+              >
+                <option value={5}>Within 5 km</option>
+                <option value={10}>Within 10 km</option>
+                <option value={20}>Within 20 km</option>
+                <option value={50}>Within 50 km</option>
+              </select>
+
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-2xl text-sm font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-600/30 transition-all active:scale-98"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Loading Skeleton */}
         {loading && (
-          <p className="text-blue-600 mb-4">Searching teachers...</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`h-48 rounded-2xl border ${
+                  darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                }`}
+              ></div>
+            ))}
+          </div>
         )}
 
-        {/* Results */}
-        <div className="grid gap-4">
-
-          {/* Show message only AFTER search */}
-          {!loading && hasSearched && teachers.length === 0 && (
-            <p className="text-gray-500">No teachers found within {radius} km for that skill.</p>
-          )}
-
-          {teachers.map((teacher) => (
-            <div
-              key={teacher.id}
-              className="p-4 bg-white rounded shadow flex flex-col md:flex-row md:justify-between md:items-center gap-3"
-            >
-              <div>
-                <p className="font-bold">{teacher.name}</p>
-                <p className="text-sm text-gray-600">Skill: {teacher.subject}</p>
-                <p className="text-sm text-gray-600">Qualification: {teacher.qualification}</p>
-                <p className="text-sm text-gray-500">📍 {teacher.distance?.toFixed(2)} km away</p>
-                {teacher.address && <p className="text-sm text-gray-500">{teacher.address}</p>}
-              </div>
-
-              <button
-                onClick={() => router.push(`/chat/${teacher.id}`)}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        {/* Search Results */}
+        {!loading && (
+          <div>
+            {/* Empty state */}
+            {hasSearched && teachers.length === 0 && (
+              <div
+                className={`p-12 text-center rounded-3xl border ${
+                  darkMode
+                    ? "bg-slate-900/40 border-slate-800"
+                    : "bg-white border-slate-200"
+                }`}
               >
-                Chat
-              </button>
+                <span className="text-4xl">🧑‍🏫</span>
+                <h3 className="text-lg font-bold mt-4">No Teachers Found</h3>
+                <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
+                  We couldn't find any teachers teaching "{search}" within{" "}
+                  {radius} km. Try selecting a larger search radius.
+                </p>
+              </div>
+            )}
+
+            {/* Grid of Results */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {teachers.map((teacher) => (
+                <div
+                  key={teacher.id}
+                  className={`p-6 rounded-2xl border shadow-sm hover:shadow-xl dark:shadow-none hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between gap-4 ${
+                    darkMode
+                      ? "bg-slate-900 border-slate-800 hover:border-slate-700"
+                      : "bg-white border-slate-200/80 hover:border-slate-300"
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20 flex-shrink-0">
+                      {teacher.name ? teacher.name[0].toUpperCase() : "T"}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-base leading-tight truncate">
+                        {teacher.name}
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5 truncate">
+                        {teacher.qualification}
+                      </p>
+
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                          {teacher.subject}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
+                          📍 {teacher.distance?.toFixed(1)} km
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {teacher.address && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal border-t border-slate-100 dark:border-slate-800 pt-3">
+                      🏠 {teacher.address}
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => router.push(`/chat/${teacher.id}`)}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl text-xs font-semibold hover:from-emerald-700 hover:to-teal-700 hover:shadow-md transition-all flex items-center justify-center gap-1.5"
+                  >
+                    💬 Message Teacher
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
