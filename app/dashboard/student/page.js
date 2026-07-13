@@ -12,6 +12,13 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: "",
+    dob: "",
+    address: "",
+    pincode: "",
+  });
 
   const router = useRouter();
 
@@ -35,6 +42,14 @@ export default function StudentDashboard() {
     }
     const parsed = JSON.parse(storedUser);
     setUser(parsed);
+    if (parsed?.user) {
+      setProfileForm({
+        name: parsed.user.name || "",
+        dob: parsed.user.dob ? parsed.user.dob.split("T")[0] : "",
+        address: parsed.user.address || "",
+        pincode: parsed.user.pincode || "",
+      });
+    }
   }, []);
 
   const toggleDarkMode = () => {
@@ -80,6 +95,40 @@ export default function StudentDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     router.push("/login");
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/profile/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: user.user.id,
+          role: user.role,
+          profileData: profileForm,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      const updatedUser = {
+        ...user,
+        user: data.user,
+      };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setIsEditingProfile(false);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error("Save profile error:", err);
+      alert("An error occurred while saving details.");
+    }
   };
 
   // Search
@@ -229,12 +278,24 @@ export default function StudentDashboard() {
                   )}
                 </div>
 
-                <button
-                  onClick={handleLogout}
-                  className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-red-500/10 transition-colors"
-                >
-                  Log out
-                </button>
+                <div className="space-y-2.5 mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    onClick={() => {
+                      setIsEditingProfile(true);
+                      setShowProfile(false);
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-xs font-semibold shadow-md shadow-blue-500/10 transition-colors"
+                  >
+                    Edit Profile
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-xs font-semibold shadow-md shadow-red-500/10 transition-colors"
+                  >
+                    Log out
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -397,6 +458,87 @@ export default function StudentDashboard() {
           </div>
         )}
       </main>
+
+      {/* Profile Edit Modal */}
+      {isEditingProfile && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl w-full max-w-md relative border border-slate-200/50 dark:border-slate-800 shadow-2xl">
+            <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+              Edit Profile Settings
+            </h3>
+            <button
+              onClick={() => setIsEditingProfile(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-650 dark:hover:text-slate-200"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+            <form onSubmit={handleSaveProfile} className="space-y-4 text-sm text-left">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={profileForm.name}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, name: e.target.value })
+                  }
+                  className="w-full p-2.5 rounded-xl border outline-none bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={profileForm.dob}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, dob: e.target.value })
+                  }
+                  className="w-full p-2.5 rounded-xl border outline-none bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Address
+                </label>
+                <textarea
+                  value={profileForm.address}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, address: e.target.value })
+                  }
+                  className="w-full p-2.5 rounded-xl border outline-none bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 h-20 resize-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Pincode
+                </label>
+                <input
+                  type="text"
+                  value={profileForm.pincode}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, pincode: e.target.value })
+                  }
+                  className="w-full p-2.5 rounded-xl border outline-none bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all mt-6"
+              >
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
