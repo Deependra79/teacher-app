@@ -54,8 +54,8 @@ const handleLogin = async (e) => {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-[400px]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-md w-[400px]">
 
         <h2 className="text-2xl font-bold text-center mb-6">
           Login
@@ -67,7 +67,7 @@ const handleLogin = async (e) => {
             type="email"
             name="email"
             placeholder="Email"
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
             onChange={handleChange}
             required
           />
@@ -76,7 +76,7 @@ const handleLogin = async (e) => {
             type="password"
             name="password"
             placeholder="Password"
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
             onChange={handleChange}
             required
           />

@@ -9,6 +9,7 @@ export default function Home() {
   const [showNavbar, setShowNavbar] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [activeScreen, setActiveScreen] = useState("student");
 
   const router = useRouter();
 
@@ -54,23 +55,14 @@ export default function Home() {
   }, []);
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-300 ${
-        darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"
-      } overflow-x-hidden font-sans`}
-    >
-      {/* 🌌 GLOWING BACKGROUND SHAPES */}
-      <div className="absolute top-0 left-0 w-full h-[600px] overflow-hidden pointer-events-none z-0">
-        <div
-          className={`absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-40 transition-colors duration-300 ${
-            darkMode ? "bg-indigo-900" : "bg-indigo-300"
-          }`}
-        ></div>
-        <div
-          className={`absolute top-[10%] right-[-10%] w-[450px] h-[450px] rounded-full blur-[100px] opacity-45 transition-colors duration-300 ${
-            darkMode ? "bg-blue-950" : "bg-blue-200"
-          }`}
-        ></div>
+    <div className="min-h-screen bg-[#FFFDD0] text-[#1D2D50] overflow-x-hidden font-sans">
+      {/* 🌌 GRADIENT BLOB BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-44 left-[-10%] w-[520px] h-[520px] rounded-full bg-[radial-gradient(circle_at_top_left,rgba(255,82,82,0.6),transparent_45%)] blur-[140px] opacity-90" />
+        <div className="absolute top-[6%] right-[-8%] w-[640px] h-[640px] rounded-full bg-[radial-gradient(circle_at_top_right,rgba(88,88,255,0.45),transparent_50%)] blur-[160px] opacity-90" />
+        <div className="absolute bottom-[-14%] left-[18%] w-[560px] h-[560px] rounded-full bg-[radial-gradient(circle_at_bottom_left,rgba(96,165,250,0.42),transparent_55%)] blur-[160px] opacity-90" />
+        <div className="absolute top-[24%] left-[42%] w-[420px] h-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.36),transparent_55%)] blur-[140px] opacity-80" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.9)_70%,rgba(255,255,255,0.95)_100%)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.95)_0%,rgba(15,23,42,0.98)_100%)]" />
       </div>
 
       {/* 🔥 NAVBAR */}
@@ -121,7 +113,7 @@ export default function Home() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:shadow-blue-600/35 transition-all hover:-translate-y-0.5 active:translate-y-0"
+            className="bg-[#FF6E40] text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-[#FF6E40]/25 hover:bg-[#FFD166] hover:text-[#1D2D50] transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             Get Started
           </button>
@@ -187,31 +179,28 @@ export default function Home() {
       {/* 🔥 HERO SECTION */}
       <section className="min-h-screen flex flex-col lg:flex-row items-center justify-between px-6 md:px-12 lg:px-24 pt-32 pb-16 gap-12 relative z-10 max-w-7xl mx-auto">
         <div className="lg:w-1/2 text-center lg:text-left flex flex-col justify-center items-center lg:items-start">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 mb-6">
+          <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-[#FFD166]/90 text-[#1D2D50] shadow-sm shadow-[#1D2D50]/10 mb-6 border border-[#FF6E40]/20">
             ✨ Proximity-Based Learning Platform
           </span>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-            Learn & Teach{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
-              Smarter
-            </span>{" "}
-            In Your Neighborhood
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight max-w-3xl">
+            Meet up with local mentors,
+            grow your skills, and join learning events.
           </h1>
 
-          <p className="text-lg text-slate-500 dark:text-slate-400 mb-8 max-w-lg">
-            Connect with top-rated local teachers. Enhance your skills, ask
-            questions, and schedule face-to-face mentorship close to home.
+          <p className="text-lg text-slate-500 dark:text-slate-400 mb-10 max-w-2xl">
+            Discover nearby tutors, chat instantly, and join curated study groups
+            tailored to your subject and location.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <button
               onClick={() => setShowModal(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all hover:-translate-y-0.5"
+              className="bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-8 py-4 rounded-full font-semibold shadow-2xl shadow-sky-500/20 hover:shadow-sky-600/25 transition-all hover:-translate-y-0.5"
             >
               Get Started Now
             </button>
-            <button className="border border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 px-8 py-4 rounded-xl font-semibold transition-all">
+            <button className="border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-950 px-8 py-4 rounded-full font-semibold transition-all text-slate-700 dark:text-slate-200">
               Learn More
             </button>
           </div>
@@ -235,42 +224,149 @@ export default function Home() {
 
         {/* Hero Visual Mockup */}
         <div className="lg:w-1/2 w-full flex justify-center items-center">
-          <div className="relative w-full max-w-[450px] aspect-square rounded-3xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-900 dark:to-slate-900/50 p-8 border border-white/20 shadow-2xl flex flex-col justify-between overflow-hidden">
-            {/* Geometric Patterns */}
-            <div className="absolute top-[-10%] right-[-10%] w-[200px] h-[200px] rounded-full bg-blue-500/10 blur-xl"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[200px] h-[200px] rounded-full bg-indigo-500/10 blur-xl"></div>
+          <div className="relative w-[330px] sm:w-[380px] h-[720px] rotate-6">
+            <div className="absolute inset-0 rounded-[70px] bg-gradient-to-br from-[#FFD166]/30 via-[#FF6E40]/20 to-[#1D2D50]/20 blur-3xl" />
+            <div className="absolute -left-10 top-16 w-44 h-44 rounded-full bg-[#FFD166]/25 blur-3xl" />
+            <div className="absolute -right-12 bottom-14 w-48 h-48 rounded-full bg-[#FF6E40]/25 blur-3xl" />
+            <div className="relative z-10 mx-auto w-full h-full rounded-[56px] bg-[#1D2D50] border border-[#FFFDD0]/20 shadow-[0_40px_80px_rgba(29,45,80,0.25)] overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(255,110,64,0.14),transparent_40%)]" />
+              <div className="relative p-5 flex flex-col h-full">
+                <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-[#FFFDD0]/80 mb-4">
+                  <div className="inline-flex rounded-full bg-[#FFFDD0]/15 p-1 border border-[#FFFDD0]/20">
+                    <button
+                      onClick={() => setActiveScreen("student")}
+                      className={`px-4 py-2 rounded-full text-[10px] font-semibold transition ${
+                        activeScreen === "student"
+                          ? "bg-[#FF6E40] text-white"
+                          : "text-[#FFFDD0] hover:bg-[#FFFDD0]/30"
+                      }`}>
+                      Student
+                    </button>
+                    <button
+                      onClick={() => setActiveScreen("teacher")}
+                      className={`px-4 py-2 rounded-full text-[10px] font-semibold transition ${
+                        activeScreen === "teacher"
+                          ? "bg-[#FF6E40] text-white"
+                          : "text-[#FFFDD0] hover:bg-[#FFFDD0]/30"
+                      }`}>
+                      Teacher
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#FFFDD0]/60" />
+                    <span className="w-2 h-2 rounded-full bg-[#FFFDD0]/60" />
+                    <span className="w-2 h-2 rounded-full bg-[#FFFDD0]/60" />
+                  </div>
+                </div>
 
-            {/* Profile Card Mockup */}
-            <div className="bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-800 flex items-center gap-4 transition-all hover:scale-105">
-              <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                JD
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-sm">Prof. John Doe</p>
-                <p className="text-xs text-slate-400">Mathematics Specialist</p>
-              </div>
-              <span className="px-2 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold">
-                1.2 km away
-              </span>
-            </div>
+                {activeScreen === "student" ? (
+                  <>
+                    <div className="mt-2 rounded-[40px] bg-[#FFFDD0]/95 border border-[#FFFDD0]/30 p-4 text-[#1D2D50] shadow-sm shadow-[#1D2D50]/10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-sm font-semibold">Search: Guitar</p>
+                          <p className="text-[11px] text-[#1D2D50]/70">4 teachers found within 5 km</p>
+                        </div>
+                        <span className="rounded-full bg-[#FF6E40] px-3 py-1 text-[10px] font-bold text-white">Guitar</span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="rounded-[28px] bg-white p-3 shadow-sm border border-[#1D2D50]/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[12px] font-semibold text-[#1D2D50]">Amit Sharma</p>
+                              <p className="text-[11px] text-[#1D2D50]/70">Guitar Tutor · 4 yrs exp</p>
+                            </div>
+                            <span className="text-[11px] font-semibold text-[#1D2D50]/80">2.2 km</span>
+                          </div>
+                        </div>
+                        <div className="rounded-[28px] bg-white p-3 shadow-sm border border-[#1D2D50]/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[12px] font-semibold text-[#1D2D50]">Pooja Verma</p>
+                              <p className="text-[11px] text-[#1D2D50]/70">Acoustic Guitar Coach</p>
+                            </div>
+                            <span className="text-[11px] font-semibold text-[#1D2D50]/80">3.8 km</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-            {/* Visual illustration center (CSS mapping circles) */}
-            <div className="flex-1 flex items-center justify-center my-6 relative">
-              <div className="w-24 h-24 rounded-full border border-blue-500/30 flex items-center justify-center animate-ping absolute"></div>
-              <div className="w-32 h-32 rounded-full border border-indigo-500/20 flex items-center justify-center absolute"></div>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow-lg shadow-blue-500/30 relative z-10">
-                📍 You
-              </div>
-            </div>
+                    <div className="mt-6 rounded-[40px] bg-[#1D2D50]/90 border border-[#FF6E40]/30 p-4 text-[#FFFDD0] shadow-lg shadow-[#FF6E40]/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold">Available Teachers</p>
+                        <span className="rounded-full bg-[#FFD166] px-3 py-1 text-[10px] font-bold text-[#1D2D50]">Live</span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="rounded-[28px] bg-[#FFFDD0] p-3 text-[#1D2D50] shadow-sm border border-[#1D2D50]/10">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[12px] font-semibold">Message Amit</p>
+                            <button className="rounded-full bg-[#FF6E40] px-3 py-1 text-[10px] font-semibold text-white">Chat</button>
+                          </div>
+                          <p className="text-[11px] text-[#1D2D50]/70 mt-1">2.2 km away · 8 students online</p>
+                        </div>
+                        <div className="rounded-[28px] bg-[#FFFDD0] p-3 text-[#1D2D50] shadow-sm border border-[#1D2D50]/10">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[12px] font-semibold">Book Pooja</p>
+                            <button className="rounded-full bg-[#FF6E40] px-3 py-1 text-[10px] font-semibold text-white">Chat</button>
+                          </div>
+                          <p className="text-[11px] text-[#1D2D50]/70 mt-1">3.8 km away · 1 slot left</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mt-2 rounded-[40px] bg-[#FFFDD0]/95 border border-[#FFFDD0]/30 p-4 text-[#1D2D50] shadow-sm shadow-[#1D2D50]/10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-sm font-semibold">Teacher Dashboard</p>
+                          <p className="text-[11px] text-[#1D2D50]/70">Active students · new messages</p>
+                        </div>
+                        <span className="rounded-full bg-[#FF6E40] px-3 py-1 text-[10px] font-bold text-white">Teacher</span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="rounded-[28px] bg-white p-3 shadow-sm border border-[#1D2D50]/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[12px] font-semibold text-[#1D2D50]">Riya Patel</p>
+                              <p className="text-[11px] text-[#1D2D50]/70">New message</p>
+                            </div>
+                            <span className="text-[11px] font-semibold text-[#1D2D50]/80">Online</span>
+                          </div>
+                        </div>
+                        <div className="rounded-[28px] bg-white p-3 shadow-sm border border-[#1D2D50]/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[12px] font-semibold text-[#1D2D50]">Aditya Singh</p>
+                              <p className="text-[11px] text-[#1D2D50]/70">Booking request</p>
+                            </div>
+                            <span className="text-[11px] font-semibold text-[#1D2D50]/80">2.6 km</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-            {/* Search Box Mockup */}
-            <div className="bg-white dark:bg-slate-950 p-3 rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-800 flex justify-between items-center gap-3">
-              <span className="text-xs text-slate-400 pl-2">
-                🔍 Search subjects near you...
-              </span>
-              <button className="bg-blue-600 text-white text-xs px-4 py-2 rounded-xl font-medium">
-                Search
-              </button>
+                    <div className="mt-6 rounded-[40px] bg-[#FFD166]/90 border border-[#FF6E40]/30 p-4 text-[#1D2D50] shadow-lg shadow-[#FF6E40]/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold">Upcoming Session</p>
+                        <span className="rounded-full bg-[#1D2D50] px-3 py-1 text-[10px] font-bold text-[#FFD166]">Live</span>
+                      </div>
+                      <p className="text-[13px] leading-relaxed">Guitar trial session · 8:15 PM · 1 student waiting</p>
+                    </div>
+                  </>
+                )}
+
+                <div className="mt-auto flex items-center justify-between bg-[#0f213f]/90 border border-[#FFFDD0]/15 rounded-[32px] px-4 py-3 text-[11px] text-[#FFFDD0]/80">
+                  <span>Tap to switch dashboards</span>
+                  <button
+                    onClick={() => setActiveScreen(activeScreen === "student" ? "teacher" : "student")}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#FF6E40] px-3 py-1 text-xs font-semibold text-white shadow-sm shadow-[#FF6E40]/25"
+                  >
+                    {activeScreen === "student" ? "Teacher" : "Student"}
+                    <span>➔</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -352,7 +448,7 @@ export default function Home() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-white text-blue-600 hover:bg-slate-100 px-8 py-4 rounded-xl font-bold shadow-xl shadow-blue-800/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+            className="bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-800 px-8 py-4 rounded-xl font-bold shadow-xl shadow-blue-800/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             Join TeachConnect Today
           </button>

@@ -72,22 +72,22 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-[420px]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-md w-[420px]">
 
         <h2 className="text-2xl font-bold text-center mb-6">
           Register as {role === "student" ? "Student" : "Teacher"}
         </h2>
 
         {/* Toggle */}
-        <div className="flex mb-6 bg-gray-200 rounded-lg overflow-hidden">
+        <div className="flex mb-6 bg-gray-200 dark:bg-slate-800 rounded-lg overflow-hidden">
           <button
             type="button"
             onClick={() => setRole("student")}
             className={`w-1/2 p-2 font-semibold ${
               role === "student"
                 ? "bg-blue-500 text-white"
-                : "text-gray-700"
+                : "text-gray-700 dark:text-slate-200"
             }`}
           >
             Student
@@ -99,7 +99,7 @@ export default function Register() {
             className={`w-1/2 p-2 font-semibold ${
               role === "teacher"
                 ? "bg-blue-500 text-white"
-                : "text-gray-700"
+                : "text-gray-700 dark:text-slate-200"
             }`}
           >
             Teacher
@@ -110,44 +110,44 @@ export default function Register() {
 
           {/* Common Fields */}
           <input type="email" name="email" placeholder="Email"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           <input type="password" name="password" placeholder="Password"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           <input type="text" name="name" placeholder="Full Name"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           <input type="text" name="qualification" placeholder="Qualification"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           <input type="date" name="dob"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           <textarea name="address" placeholder="Address"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           <p className="text-sm text-gray-500 -mt-2">
             Your current device location will be used to match you with nearby teachers or students.
           </p>
 
           <input type="number" name="pincode" placeholder="Pincode"
-            className="w-full p-2 border rounded" onChange={handleChange} required />
+            className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
           {/* Student Only */}
           {role === "student" && (
             <input type="text" name="fatherName" placeholder="Father's Name"
-              className="w-full p-2 border rounded" onChange={handleChange} required />
+              className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
           )}
 
           {/* Teacher Only */}
           {role === "teacher" && (
             <>
               <input type="text" name="aadhar" placeholder="Aadhar Number"
-                className="w-full p-2 border rounded" onChange={handleChange} required />
+                className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
 
               <input type="text" name="subject" placeholder="Subject You Teach"
-                className="w-full p-2 border rounded" onChange={handleChange} required />
+                className="w-full p-2 border rounded bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800" onChange={handleChange} required />
             </>
           )}
 
