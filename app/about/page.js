@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AboutPage() {
   const [darkMode, setDarkMode] = useState(false);
+  const [activeValue, setActiveValue] = useState(0);
   const router = useRouter();
 
   // Load and apply theme
@@ -31,6 +32,39 @@ export default function AboutPage() {
     }
   };
 
+  const valuesData = [
+    {
+      emoji: "📍",
+      title: "Proximity First",
+      tagline: "Hyper-local match query based on device coordinates.",
+      details: "TeachConnect directly queries your local longitude and latitude. Matches are made within a configurable kilometer radius so that tutoring happens locally, eliminating long commute times and expensive travel overheads."
+    },
+    {
+      emoji: "🤝",
+      title: "Zero Fees",
+      tagline: "Direct connection with no commissions or brokers.",
+      details: "There are absolutely no broker fees, subscriptions, or tutoring commissions. TeachConnect is a completely free, direct peer-to-peer messaging workspace created to facilitate direct learning in your neighborhood."
+    },
+    {
+      emoji: "🛡️",
+      title: "Safe Matching",
+      tagline: "Complete control over safety with block and hide actions.",
+      details: "Safety is built into the chat layer. Users can block other accounts directly from their dashboard sidebar or chat rooms, locking the conversation and disabling message insertion automatically in the database."
+    },
+    {
+      emoji: "🏡",
+      title: "Community Driven",
+      tagline: "Empowering neighborhoods to self-organize physical learning.",
+      details: "By encouraging community-level learning, we foster physical connections between verified neighbors, creating lasting face-to-face mentorship and tutoring relationships that enrich the local area."
+    },
+    {
+      emoji: "⚡",
+      title: "Modern UX",
+      tagline: "Vibrant designs, dark modes, and full responsiveness.",
+      details: "TeachConnect is built with premium glassmorphic cards, custom dark modes, and fluid desktop/mobile split-pane dashboards to make managing profile settings and chat sessions clean and natural."
+    }
+  ];
+
   return (
     <div
       className={`min-h-screen transition-colors duration-300 ${
@@ -45,8 +79,8 @@ export default function AboutPage() {
           }`}
         ></div>
         <div
-          className={`absolute top-[40%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-25 transition-colors duration-300 ${
-            darkMode ? "bg-emerald-950" : "bg-emerald-100/50"
+          className={`absolute top-[40%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 transition-colors duration-300 ${
+            darkMode ? "bg-blue-950/40" : "bg-blue-100/40"
           }`}
         ></div>
       </div>
@@ -110,7 +144,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1 */}
           <div
-            className={`relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm ${
+            className={`relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-sm ${
               darkMode
                 ? "bg-white text-slate-950"
                 : "bg-slate-900 text-white"
@@ -124,7 +158,7 @@ export default function AboutPage() {
 
           {/* Card 2 */}
           <div
-            className="relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm bg-gradient-to-tr from-blue-600 to-indigo-600 text-white"
+            className="relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-sm bg-gradient-to-tr from-blue-600 to-indigo-600 text-white"
           >
             <h2 className="text-4xl md:text-5xl font-bold">100%</h2>
             <p className="text-sm md:text-base font-medium opacity-90 leading-tight">
@@ -134,7 +168,7 @@ export default function AboutPage() {
 
           {/* Card 3 */}
           <div
-            className={`relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm border ${
+            className={`relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-sm border ${
               darkMode
                 ? "bg-slate-900/40 border-slate-800 text-white"
                 : "bg-white border-slate-200/60 text-slate-900"
@@ -148,7 +182,7 @@ export default function AboutPage() {
 
           {/* Card 4 */}
           <div
-            className="relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm bg-emerald-600 text-white"
+            className="relative w-full aspect-square p-6 md:p-8 rounded-3xl overflow-hidden flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-sm bg-gradient-to-tr from-[#FF6E40] to-[#FFD166] text-[#1D2D50]"
           >
             <h2 className="text-4xl md:text-5xl font-bold">0</h2>
             <p className="text-sm md:text-base font-medium opacity-90 leading-tight">
@@ -170,7 +204,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 🔥 DEVELOPER SPOTLIGHT (WONDERMAKERS STYLE) */}
+      {/* 🔥 DEVELOPER SPOTLIGHT (WONDERMAKERS STYLE WITH ASSET IMAGE) */}
       <section className="relative z-10 px-6 md:px-12 max-w-5xl mx-auto mb-28">
         <div className="flex flex-col items-start gap-4 mb-8">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
@@ -185,24 +219,26 @@ export default function AboutPage() {
               : "bg-white border-slate-200/50"
           }`}
         >
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-3xl shadow-lg shadow-blue-500/20 shrink-0">
-              DS
-            </div>
-            <div className="flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+            <div className="lg:col-span-2">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h3 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-                  Deependra Singh
-                </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-                  Personal Project
-                </span>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-blue-500/20 shrink-0">
+                  DS
+                </div>
+                <div>
+                  <h3 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    Deependra Singh
+                    <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                      Personal Project
+                    </span>
+                  </h3>
+                </div>
               </div>
               <p className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-6">
                 Developer, Deployer & Research Head at Children's Choice
               </p>
               
-              <div className="space-y-4 text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">
+              <div className="space-y-4 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                 <p>
                   TeachConnect is designed, built, and deployed independently by **Deependra Singh** as a personal project to bridge educational divides. Professionally, Deependra serves as the **Research Head at Children's Choice**, where he directs research on developmental learning methodologies.
                 </p>
@@ -211,114 +247,83 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
+
+            {/* Generated Vector Connection Asset */}
+            <div className="w-full h-full relative aspect-4/3 lg:aspect-square overflow-hidden rounded-2xl shadow-lg border border-slate-200/30 dark:border-slate-800/30">
+              <img
+                src="/connection_illustration.jpg"
+                alt="Digital Connection & Mentorship"
+                className="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 🔥 VALUES SECTION (5 COLUMNS GRID) */}
+      {/* 🔥 VALUES SECTION (INTERACTIVE TABBED GRIDS) */}
       <section className="relative z-10 px-6 md:px-12 max-w-5xl mx-auto">
         <div className="flex flex-col items-center text-center gap-4 mb-12">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            Our Values
+            Interactive Values
           </span>
           <h2 className="text-3xl font-extrabold">Core Principles</h2>
+          <p className="text-sm text-slate-400 dark:text-slate-500">
+            Click on any value card to explore the principle breakdown.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {/* Card 1 */}
-          <div
-            className={`p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between aspect-[3/4] ${
-              darkMode
-                ? "bg-slate-900/30 border-slate-800/80"
-                : "bg-white border-slate-200/60"
-            }`}
-          >
-            <div>
-              <span className="text-2xl mb-4 block">📍</span>
-              <h4 className="font-extrabold text-base mb-2">Proximity</h4>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
-              Latitude and longitude coordinates ensure matches are strictly neighbor-to-neighbor.
-            </p>
-          </div>
-
-          {/* Card 2 */}
-          <div
-            className={`p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between aspect-[3/4] ${
-              darkMode
-                ? "bg-slate-900/30 border-slate-800/80"
-                : "bg-white border-slate-200/60"
-            }`}
-          >
-            <div>
-              <span className="text-2xl mb-4 block">🤝</span>
-              <h4 className="font-extrabold text-base mb-2">Zero Fees</h4>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
-              Direct connection without commissions, brokers, or subscription gateways.
-            </p>
-          </div>
-
-          {/* Card 3 */}
-          <div
-            className={`p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between aspect-[3/4] ${
-              darkMode
-                ? "bg-slate-900/30 border-slate-800/80"
-                : "bg-white border-slate-200/60"
-            }`}
-          >
-            <div>
-              <span className="text-2xl mb-4 block">🛡️</span>
-              <h4 className="font-extrabold text-base mb-2">Safe Space</h4>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
-              Inbuilt user blocking and conversation removals give users control over safety.
-            </p>
-          </div>
-
-          {/* Card 4 */}
-          <div
-            className={`p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between aspect-[3/4] ${
-              darkMode
-                ? "bg-slate-900/30 border-slate-800/80"
-                : "bg-white border-slate-200/60"
-            }`}
-          >
-            <div>
-              <span className="text-2xl mb-4 block">🏡</span>
-              <h4 className="font-extrabold text-base mb-2">Community</h4>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
-              Empowering local neighborhoods to self-organize physical learning sessions.
-            </p>
-          </div>
-
-          {/* Card 5 */}
-          <div
-            className={`p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between aspect-[3/4] ${
-              darkMode
-                ? "bg-slate-900/30 border-slate-800/80"
-                : "bg-white border-slate-200/60"
-            }`}
-          >
-            <div>
-              <span className="text-2xl mb-4 block">⚡</span>
-              <h4 className="font-extrabold text-base mb-2">Aesthetics</h4>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
-              Modern fluid dashboards, dark mode support, and seamless responsiveness.
-            </p>
-          </div>
+        {/* Dynamic 5-column values cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          {valuesData.map((val, idx) => {
+            const isActive = activeValue === idx;
+            return (
+              <div
+                key={idx}
+                onClick={() => setActiveValue(idx)}
+                className={`p-6 rounded-2xl border cursor-pointer transition-all duration-300 flex flex-col justify-between aspect-[3/4] ${
+                  isActive
+                    ? "border-blue-600 bg-blue-500/5 dark:bg-blue-500/10 shadow-lg shadow-blue-500/5 translate-y-[-4px] ring-2 ring-blue-500/20"
+                    : darkMode
+                    ? "bg-slate-900/30 border-slate-800 hover:border-slate-700 hover:bg-slate-900/50"
+                    : "bg-white border-slate-200/60 hover:border-slate-350 hover:bg-slate-50/50"
+                }`}
+              >
+                <div>
+                  <span className="text-3xl mb-4 block select-none">{val.emoji}</span>
+                  <h4 className={`font-extrabold text-base mb-2 ${isActive ? "text-blue-600 dark:text-blue-400" : ""}`}>
+                    {val.title}
+                  </h4>
+                </div>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-normal">
+                  {val.tagline}
+                </p>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Back control button */}
-        <div className="text-center pt-16">
-          <button
-            onClick={() => router.push("/")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 text-sm"
-          >
-            ← Back to Home
-          </button>
+        {/* Dynamic Detailed Info Panel */}
+        <div
+          className={`p-8 rounded-3xl border transition-all duration-500 ${
+            darkMode
+              ? "bg-slate-900/40 border-slate-800/80"
+              : "bg-white border-slate-200/60"
+          }`}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-4xl select-none">{valuesData[activeValue].emoji}</span>
+            <div>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                {valuesData[activeValue].title}
+              </h3>
+              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
+                {valuesData[activeValue].tagline}
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">
+            {valuesData[activeValue].details}
+          </p>
         </div>
       </section>
 
