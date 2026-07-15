@@ -86,16 +86,12 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Desktop Links */}
         <div className="hidden md:flex gap-8 items-center">
-          <a className="text-sm font-medium hover:text-blue-600 transition-colors cursor-pointer">
+          <a onClick={() => router.push("/")} className="text-sm font-medium hover:text-blue-600 transition-colors cursor-pointer">
             Home
           </a>
-          <a className="text-sm font-medium hover:text-blue-600 transition-colors cursor-pointer">
+          <a onClick={() => router.push("/about")} className="text-sm font-medium hover:text-blue-600 transition-colors cursor-pointer">
             About
-          </a>
-          <a className="text-sm font-medium hover:text-blue-600 transition-colors cursor-pointer">
-            Vision
           </a>
 
           {/* Theme Switcher */}
@@ -154,14 +150,11 @@ export default function Home() {
           >
             ✕
           </button>
-          <a onClick={() => setMenuOpen(false)} className="hover:text-blue-600">
+          <a onClick={() => { setMenuOpen(false); router.push("/"); }} className="hover:text-blue-600 cursor-pointer">
             Home
           </a>
-          <a onClick={() => setMenuOpen(false)} className="hover:text-blue-600">
+          <a onClick={() => { setMenuOpen(false); router.push("/about"); }} className="hover:text-blue-600 cursor-pointer">
             About
-          </a>
-          <a onClick={() => setMenuOpen(false)} className="hover:text-blue-600">
-            Vision
           </a>
 
           <button
