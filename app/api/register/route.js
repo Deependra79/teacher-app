@@ -140,7 +140,7 @@ export async function POST(req) {
     console.error("REGISTER ERROR:", error);
 
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { error: `Something went wrong: ${error.message}` },
       { status: 500 }
     );
   }

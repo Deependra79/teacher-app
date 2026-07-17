@@ -206,7 +206,7 @@ export async function POST(req) {
     console.error("LOGIN ERROR:", err);
 
     return Response.json(
-      { error: "Something went wrong" },
+      { error: `Something went wrong: ${err.message}` },
       { status: 500 }
     );
   }
