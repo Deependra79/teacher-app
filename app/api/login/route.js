@@ -96,7 +96,7 @@ export async function POST(req) {
         );
       }
 
-      const bcrypt = await import('bcrypt');
+      const bcrypt = await import('bcryptjs');
       const isMatch = await bcrypt.compare(password, dbUser.password);
       if (!isMatch) {
         return Response.json(

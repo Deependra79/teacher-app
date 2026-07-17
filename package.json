@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.2",
-    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
     "next": "16.2.1",
     "pg": "^8.20.0",
     "react": "19.2.4",
